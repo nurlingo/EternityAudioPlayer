@@ -19,8 +19,9 @@ enum ButtonIcon: String {
 }
 
 public enum PlayerMode {
-    case trackBased
     case sectionBased
+    case rowBased
+    case durationBased
 }
 
 // AudioPlayer functionality
@@ -59,7 +60,7 @@ public class AudioPlayer: NSObject {
             /// Uncomment for progress by tracks played
             if mode == .sectionBased {
                 panelDelegate?.setProgress(Float(audioIndex.section)/Float(tracks.count-1))
-            } else if mode == .trackBased {
+            } else if mode == .rowBased {
                 let allTracks = tracks.flatMap{ $0 }
                 if let currentlyPlayingIndex = allTracks.firstIndex(of: tracks[audioIndex.section][audioIndex.row]) {
                     panelDelegate?.setProgress(Float(currentlyPlayingIndex)/Float(allTracks.count-1))
@@ -83,7 +84,7 @@ public class AudioPlayer: NSObject {
         setupPlayer()
         registerForInterruptions()
          
-        if mode == .trackBased {
+        if mode == .durationBased {
             setupProgressTracking()
         }
     }
@@ -307,7 +308,7 @@ extension AudioPlayer: AVAudioPlayerDelegate {
             } else {
                 self.panelDelegate?.setPlayButton(ButtonIcon.play.rawValue)
             }
-        } else if mode == .trackBased {
+        } else if mode == .rowBased {
             if isRepeatOn {
                 self.audioIndex.row = self.audioIndex.row
             } else if moreRowsAhead {
