@@ -9,7 +9,7 @@
 import UIKit
 import AVFoundation
 
-enum ButtonIcon: String {
+public enum ButtonIcon: String {
     case play = "play"
     case pause = "pause"
     case speedometer
@@ -28,6 +28,16 @@ public enum PlayerMode {
 public class AudioPlayer: NSObject {
     
     public static let shared = AudioPlayer()
+    
+    public var mode: PlayerMode {
+        didSet {
+            if mode == .durationBased {
+                setupDurationTracking()
+            } else {
+                removeDurationTracking()
+            }
+        }
+    }
     
     public weak var panelDelegate: PlayerPanelDelegate?
     public weak var contentDelegate: PlayerContentDelegate? {
@@ -71,22 +81,15 @@ public class AudioPlayer: NSObject {
         }
     }
     
-    fileprivate var mode: PlayerMode
     fileprivate var previousIndex: IndexPath = IndexPath(row: 0, section: 0)
     fileprivate var player: AVAudioPlayer?
     fileprivate var repeatActivated: Bool = false
     fileprivate var updater : CADisplayLink! = nil
     
-    public init(mode: PlayerMode = .sectionBased) {
-        self.mode = mode
+    override init() {
         super.init()
-        
         setupPlayer()
         registerForInterruptions()
-         
-        if mode == .durationBased {
-            setupProgressTracking()
-        }
     }
     
     public func deinitializePlayer() {
@@ -97,9 +100,13 @@ public class AudioPlayer: NSObject {
         notificationCenter.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
     }
     
-    fileprivate func setupProgressTracking() {
+    fileprivate func setupDurationTracking() {
         updater = CADisplayLink(target: self, selector: #selector(self.trackAudio))
         updater.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
+    }
+    
+    fileprivate func removeDurationTracking() {
+        updater = nil
     }
     
     @objc fileprivate func trackAudio() {
