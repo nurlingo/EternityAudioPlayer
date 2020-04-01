@@ -29,7 +29,7 @@ public class AudioPlayer: NSObject {
     
     public static let shared = AudioPlayer()
     
-    public var mode: PlayerMode {
+    public var mode: PlayerMode = .sectionBased {
         didSet {
             if mode == .durationBased {
                 setupDurationTracking()
