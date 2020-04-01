@@ -179,8 +179,7 @@ extension AudioPlayer {
     
     public func handlePlayButton() {
         guard let player = player else {
-            let temp = audioIndex
-            audioIndex = temp
+            self.audioIndex.row = self.audioIndex.row
             return
         }
         
@@ -287,37 +286,40 @@ extension AudioPlayer: AVAudioPlayerDelegate {
     }
     
     public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        goToNextLine(isRepeatOn: self.repeatActivated)
+        if self.repeatActivated {
+            playRepeat()
+        } else {
+           goToNextLine()
+        }
     }
     
-    private func goToNextLine(isRepeatOn: Bool = false){
-        
-        let moreSectionsAhead = audioIndex.section < tracks.count - 1
-        
+    private func playRepeat() {
         let section = tracks[audioIndex.section]
         let moreRowsAhead = audioIndex.row < section.count - 1
-        
         
         if mode == .sectionBased {
             if moreRowsAhead {
                 self.audioIndex.row += 1
-            } else if isRepeatOn {
+            } else {
                 self.audioIndex.row = 0
-            } else if moreSectionsAhead {
-                self.audioIndex = IndexPath(row: 0, section: self.audioIndex.section + 1)
-            } else {
-                self.panelDelegate?.setPlayButton(ButtonIcon.play.rawValue)
             }
-        } else if mode == .rowBased {
-            if isRepeatOn {
-                self.audioIndex.row = self.audioIndex.row
-            } else if moreRowsAhead {
-                self.audioIndex.row += 1
-            } else if moreSectionsAhead {
-                self.audioIndex = IndexPath(row: 0, section: self.audioIndex.section + 1)
-            } else {
-                self.panelDelegate?.setPlayButton(ButtonIcon.play.rawValue)
-            }
+        } else {
+            self.audioIndex.row = self.audioIndex.row
+        }
+    }
+    
+    private func goToNextLine(){
+        
+        let moreSectionsAhead = audioIndex.section < tracks.count - 1
+        let section = tracks[audioIndex.section]
+        let moreRowsAhead = audioIndex.row < section.count - 1
+        
+        if moreRowsAhead {
+            self.audioIndex.row += 1
+        } else if moreSectionsAhead {
+            self.audioIndex = IndexPath(row: 0, section: self.audioIndex.section + 1)
+        } else {
+            self.panelDelegate?.setPlayButton(ButtonIcon.play.rawValue)
         }
     }
     
