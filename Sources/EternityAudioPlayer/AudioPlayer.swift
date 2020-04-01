@@ -76,7 +76,7 @@ public class AudioPlayer: NSObject {
                 }
             }
             
-            if let _ = self.player { self.playAudio() }
+            self.playAudio()
             contentDelegate?.scrollTo(audioIndex)
         }
     }
@@ -179,8 +179,8 @@ extension AudioPlayer {
     
     public func handlePlayButton() {
         guard let player = player else {
-            self.playAudio()
-            contentDelegate?.scrollTo(audioIndex)
+            let temp = audioIndex
+            audioIndex = temp
             return
         }
         
@@ -246,12 +246,7 @@ extension AudioPlayer {
     }
     
     public func play(at indexPath: IndexPath) {
-        if player == nil {
-            audioIndex = indexPath
-            playAudio()
-        } else {
-            audioIndex = indexPath
-        }
+        audioIndex = indexPath
     }
     
 }
