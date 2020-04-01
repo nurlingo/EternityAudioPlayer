@@ -18,7 +18,7 @@ public protocol PlayerContentDelegate: class {
     func displayProgress(_ miliseconds: Int)
 }
 
-extension PlayerContentDelegate {
+public extension PlayerContentDelegate {
     func highlightPlaying(previousIndex: IndexPath, currentIndex: IndexPath) {}
     func scrollTo(_ indexPath: IndexPath) {}
     func didPause() {}
