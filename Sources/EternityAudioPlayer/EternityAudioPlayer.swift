@@ -18,13 +18,13 @@ enum ButtonIcon: String {
     case repeatOne = "repeat.1"
 }
 
-enum PlayerMode {
+public enum PlayerMode {
     case trackBased
     case sectionBased
 }
 
 // AudioPlayer functionality
-class AudioPlayer: NSObject {
+public class AudioPlayer: NSObject {
     
     public static let shared = AudioPlayer()
     
@@ -285,7 +285,7 @@ extension AudioPlayer: AVAudioPlayerDelegate {
         
     }
     
-    internal func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+    public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         goToNextLine(isRepeatOn: self.repeatActivated)
     }
     

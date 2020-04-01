@@ -10,7 +10,7 @@ import Foundation
 
 //MARK:- Player related
 
-protocol PlayerContentDelegate: class {
+public protocol PlayerContentDelegate: class {
     func highlightPlaying(previousIndex: IndexPath, currentIndex: IndexPath)
     func scrollTo(_ indexPath: IndexPath)
     func didPause()
@@ -26,7 +26,7 @@ extension PlayerContentDelegate {
     func displayProgress(_ miliseconds: Int) {}
 }
 
-protocol PlayerPanelDelegate: class {
+public protocol PlayerPanelDelegate: class {
     func setPlayButton(_ imageName: String)
     func togglRepeatButton(_ activated: Bool)
     func setSpeedButton(_ speed: String)
