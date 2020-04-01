@@ -177,7 +177,7 @@ extension AudioPlayer {
         self.player?.pause()
     }
     
-    public func handlePlayButton(sender: UIButton) {
+    public func handlePlayButton() {
         guard let player = player else {
             self.playAudio()
             contentDelegate?.scrollTo(audioIndex)
@@ -186,13 +186,11 @@ extension AudioPlayer {
         
         if player.isPlaying {
             pausePlayer()
-            let playImage = UIImage(named: "play")
-            sender.setImage(playImage, for: .normal)
+            panelDelegate?.setPlayButton(ButtonIcon.play.rawValue)
         } else {
             contentDelegate?.didContinue()
             player.play()
-            let pauseImage = UIImage(named: "pause")
-            sender.setImage(pauseImage, for: .normal)
+            panelDelegate?.setPlayButton(ButtonIcon.pause.rawValue)
         }
     }
     
