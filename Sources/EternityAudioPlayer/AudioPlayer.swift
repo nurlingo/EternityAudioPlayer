@@ -41,7 +41,6 @@ public class AudioPlayer: NSObject {
     }
     
     public var tracks: [[String]] = []
-    public var mode: PlayerMode
     public var playSpeed: Float = 1.0 {
         didSet {
             UserDefaults.standard.set(playSpeed, forKey: "playSpeed")
@@ -72,12 +71,13 @@ public class AudioPlayer: NSObject {
         }
     }
     
+    fileprivate var mode: PlayerMode
     fileprivate var previousIndex: IndexPath = IndexPath(row: 0, section: 0)
     fileprivate var player: AVAudioPlayer?
     fileprivate var repeatActivated: Bool = false
     fileprivate var updater : CADisplayLink! = nil
     
-    init(mode: PlayerMode = .sectionBased) {
+    public init(mode: PlayerMode = .sectionBased) {
         self.mode = mode
         super.init()
         
