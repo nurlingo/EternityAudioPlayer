@@ -16,12 +16,20 @@ public enum ButtonIcon: String {
     case forward
     case backward
     case repeatOne = "repeat.1"
+    case repeatAll
+    case repeatNone
 }
 
-public enum PlayerMode {
+public enum ProgressMode {
     case sectionBased
     case rowBased
     case durationBased
+}
+
+public enum RepeatMode: Int {
+    case repeatOff = 1
+    case repeatAll = 2
+    case repeatOne = 3
 }
 
 // AudioPlayer functionality
@@ -29,7 +37,7 @@ public class AudioPlayer: NSObject {
     
     public static let shared = AudioPlayer()
     
-    public var mode: PlayerMode = .sectionBased {
+    public var mode: ProgressMode = .durationBased {
         didSet {
             if mode == .durationBased {
                 setupDurationTracking()
@@ -38,6 +46,8 @@ public class AudioPlayer: NSObject {
             }
         }
     }
+    
+    public var repeatMode: RepeatMode = .repeatOff
     
     public weak var panelDelegate: PlayerPanelDelegate?
     public weak var contentDelegate: PlayerContentDelegate? {
@@ -83,7 +93,6 @@ public class AudioPlayer: NSObject {
     
     fileprivate var previousIndex: IndexPath = IndexPath(row: 0, section: 0)
     fileprivate var player: AVAudioPlayer?
-    fileprivate var repeatActivated: Bool = false
     fileprivate var updater : CADisplayLink! = nil
     
     override init() {
@@ -210,8 +219,9 @@ extension AudioPlayer {
     }
     
     public func handleRepeatButton() {
-        repeatActivated = !repeatActivated
-        panelDelegate?.togglRepeatButton(repeatActivated)
+        let newValue = (repeatMode.rawValue % 3) + 1
+        repeatMode = RepeatMode(rawValue: newValue) ?? .repeatOff
+        panelDelegate?.togglRepeatButton(repeatMode)
     }
     
     public func handleSpeedButton() {
@@ -286,25 +296,23 @@ extension AudioPlayer: AVAudioPlayerDelegate {
     }
     
     public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        if self.repeatActivated {
+        switch repeatMode {
+        case .repeatOff:
+            goToNextLine()
+        case .repeatAll:
             playRepeat()
-        } else {
-           goToNextLine()
-        }
+        case .repeatOne:
+            audioIndex.row = audioIndex.row
     }
     
     private func playRepeat() {
         let section = tracks[audioIndex.section]
         let moreRowsAhead = audioIndex.row < section.count - 1
         
-        if mode == .sectionBased {
-            if moreRowsAhead {
-                self.audioIndex.row += 1
-            } else {
-                self.audioIndex.row = 0
-            }
+        if moreRowsAhead {
+            self.audioIndex.row += 1
         } else {
-            self.audioIndex.row = self.audioIndex.row
+            self.audioIndex.row = 0
         }
     }
     
