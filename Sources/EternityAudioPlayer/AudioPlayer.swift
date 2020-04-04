@@ -29,7 +29,7 @@ public enum ProgressMode {
 public enum RepeatMode: Int {
     case repeatOff = 1
     case repeatAll = 2
-    case repeatOne = 3
+//    case repeatOne = 3
 }
 
 // AudioPlayer functionality
@@ -229,8 +229,8 @@ extension AudioPlayer {
             panelDelegate?.setRepeatButton(ButtonIcon.repeatOff.rawValue)
         case .repeatAll:
             panelDelegate?.setRepeatButton(ButtonIcon.repeatAll.rawValue)
-        case .repeatOne:
-            panelDelegate?.setRepeatButton(ButtonIcon.repeatOne.rawValue)
+//        case .repeatOne:
+//            panelDelegate?.setRepeatButton(ButtonIcon.repeatOne.rawValue)
         }
         
     }
@@ -312,8 +312,8 @@ extension AudioPlayer: AVAudioPlayerDelegate {
             goToNextLine()
         case .repeatAll:
             playRepeat()
-        case .repeatOne:
-            audioIndex.row = audioIndex.row
+//        case .repeatOne:
+//            audioIndex.row = audioIndex.row
         }
     }
     
