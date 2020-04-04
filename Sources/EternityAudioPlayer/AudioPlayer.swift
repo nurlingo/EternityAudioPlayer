@@ -319,6 +319,7 @@ extension AudioPlayer: AVAudioPlayerDelegate {
         } else if moreSectionsAhead {
             self.audioIndex = IndexPath(row: 0, section: self.audioIndex.section + 1)
         } else {
+            self.contentDelegate?.didCompleteAllTracks()
             self.panelDelegate?.setPlayButton(ButtonIcon.play.rawValue)
         }
     }
