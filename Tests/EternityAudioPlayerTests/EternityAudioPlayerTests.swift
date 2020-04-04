@@ -6,7 +6,7 @@ final class EternityAudioPlayerTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual(AudioPlayer().mode, PlayerMode.sectionBased)
+        XCTAssertEqual(AudioPlayer().progressMode, ProgressMode.sectionBased)
     }
 
     static var allTests = [

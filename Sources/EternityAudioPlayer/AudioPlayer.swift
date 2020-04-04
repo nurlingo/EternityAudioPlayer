@@ -17,7 +17,7 @@ public enum ButtonIcon: String {
     case backward
     case repeatOne = "repeat.1"
     case repeatAll
-    case repeatNone
+    case repeatOff
 }
 
 public enum ProgressMode {
@@ -37,9 +37,9 @@ public class AudioPlayer: NSObject {
     
     public static let shared = AudioPlayer()
     
-    public var mode: ProgressMode = .durationBased {
+    public var progressMode: ProgressMode = .durationBased {
         didSet {
-            if mode == .durationBased {
+            if progressMode == .durationBased {
                 setupDurationTracking()
             } else {
                 removeDurationTracking()
@@ -77,9 +77,9 @@ public class AudioPlayer: NSObject {
         didSet {
             contentDelegate?.highlightPlaying(previousIndex: previousIndex, currentIndex: audioIndex)
             /// Uncomment for progress by tracks played
-            if mode == .sectionBased {
+            if progressMode == .sectionBased {
                 panelDelegate?.setProgress(Float(audioIndex.section)/Float(tracks.count-1))
-            } else if mode == .rowBased {
+            } else if progressMode == .rowBased {
                 let allTracks = tracks.flatMap{ $0 }
                 if let currentlyPlayingIndex = allTracks.firstIndex(of: tracks[audioIndex.section][audioIndex.row]) {
                     panelDelegate?.setProgress(Float(currentlyPlayingIndex)/Float(allTracks.count-1))
@@ -103,6 +103,8 @@ public class AudioPlayer: NSObject {
     
     public func deinitializePlayer() {
         audioIndex = IndexPath(row: 0, section: 0)
+        repeatMode = .repeatOff
+        progressMode = .durationBased
         player?.stop()
         player = nil
         let notificationCenter = NotificationCenter.default
@@ -221,7 +223,16 @@ extension AudioPlayer {
     public func handleRepeatButton() {
         let newValue = (repeatMode.rawValue % 3) + 1
         repeatMode = RepeatMode(rawValue: newValue) ?? .repeatOff
-        panelDelegate?.togglRepeatButton(repeatMode)
+        
+        switch repeatMode {
+        case .repeatOff:
+            panelDelegate?.setRepeatButton(ButtonIcon.repeatOff.rawValue)
+        case .repeatAll:
+            panelDelegate?.setRepeatButton(ButtonIcon.repeatAll.rawValue)
+        case .repeatOne:
+            panelDelegate?.setRepeatButton(ButtonIcon.repeatOne.rawValue)
+        }
+        
     }
     
     public func handleSpeedButton() {
@@ -303,6 +314,7 @@ extension AudioPlayer: AVAudioPlayerDelegate {
             playRepeat()
         case .repeatOne:
             audioIndex.row = audioIndex.row
+        }
     }
     
     private func playRepeat() {

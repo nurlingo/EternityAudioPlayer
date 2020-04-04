@@ -38,7 +38,7 @@ public protocol PlayerPanelDelegate: class {
 
 public extension PlayerPanelDelegate {
     func setPlayButton(_ imageName: String) {}
-    func togglRepeatButton(_ activated: Bool) {}
+    func setRepeatButton(_ imageName: String) {}
     func setSpeedButton(_ speed: String) {}
     func setProgress(_ progress: Float) {}
 }
