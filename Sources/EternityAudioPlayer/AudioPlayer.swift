@@ -53,8 +53,8 @@ public class AudioPlayer: NSObject {
     public weak var contentDelegate: PlayerContentDelegate? {
         didSet {
             if player?.isPlaying ?? false {
-                contentDelegate?.highlightPlaying(previousIndex: previousIndex, currentIndex: audioIndex)
-                contentDelegate?.scrollTo(audioIndex)
+                contentDelegate?.highlightPlaying(previousIndex: previousIndex, currentIndex: currentIndex)
+                contentDelegate?.scrollTo(currentIndex)
             }
             
         }
@@ -68,30 +68,34 @@ public class AudioPlayer: NSObject {
         }
     }
     
-    public var audioIndex: IndexPath = IndexPath(row: 0, section: 0) {
-        
+    private var previousIndex: IndexPath = IndexPath(row: 0, section: 0)
+    
+    private var currentIndex: IndexPath = IndexPath(row: 0, section: 0) {
         willSet {
-            previousIndex = audioIndex
-        }
-        
-        didSet {
-            contentDelegate?.highlightPlaying(previousIndex: previousIndex, currentIndex: audioIndex)
-            /// Uncomment for progress by tracks played
-            if progressMode == .sectionBased {
-                panelDelegate?.setProgress(Float(audioIndex.section)/Float(tracks.count-1))
-            } else if progressMode == .rowBased {
-                let allTracks = tracks.flatMap{ $0 }
-                if let currentlyPlayingIndex = allTracks.firstIndex(of: tracks[audioIndex.section][audioIndex.row]) {
-                    panelDelegate?.setProgress(Float(currentlyPlayingIndex)/Float(allTracks.count-1))
-                }
-            }
-            
-            self.playAudio()
-            contentDelegate?.scrollTo(audioIndex)
+            previousIndex = currentIndex
         }
     }
     
-    fileprivate var previousIndex: IndexPath = IndexPath(row: 0, section: 0)
+    private var lastRowPreviousSection: IndexPath {
+        IndexPath(row: tracks[currentIndex.section - 1].count-1, section: currentIndex.section - 1)
+    }
+    
+    private var firstRowSameSection: IndexPath {
+        IndexPath(row: 0, section: currentIndex.section)
+    }
+    
+    private var previousRowSameSection: IndexPath {
+        IndexPath(row: currentIndex.row-1, section: currentIndex.section)
+    }
+    
+    private var nextRowSameSection: IndexPath {
+        IndexPath(row: currentIndex.row+1, section: currentIndex.section)
+    }
+    
+    private var firstRowNextSection: IndexPath {
+        IndexPath(row: currentIndex.row+1, section: currentIndex.section+1)
+    }
+    
     fileprivate var player: AVAudioPlayer?
     fileprivate var updater : CADisplayLink! = nil
     
@@ -101,8 +105,27 @@ public class AudioPlayer: NSObject {
         registerForInterruptions()
     }
     
+    public func play(at indexPath: IndexPath) {
+        
+        self.currentIndex = indexPath
+        
+        contentDelegate?.highlightPlaying(previousIndex: previousIndex, currentIndex: currentIndex)
+        /// Uncomment for progress by tracks played
+        if progressMode == .sectionBased {
+            panelDelegate?.setProgress(Float(currentIndex.section)/Float(tracks.count-1))
+        } else if progressMode == .rowBased {
+            let allTracks = tracks.flatMap{ $0 }
+            if let currentlyPlayingIndex = allTracks.firstIndex(of: tracks[currentIndex.section][currentIndex.row]) {
+                panelDelegate?.setProgress(Float(currentlyPlayingIndex)/Float(allTracks.count-1))
+            }
+        }
+        
+        self.playAudio()
+        contentDelegate?.scrollTo(currentIndex)
+    }
+    
     public func deinitializePlayer() {
-        audioIndex = IndexPath(row: 0, section: 0)
+        resetAudioIndex()
         repeatMode = .repeatOff
         progressMode = .durationBased
         player?.stop()
@@ -112,9 +135,7 @@ public class AudioPlayer: NSObject {
     }
     
     private func resetAudioIndex() {
-        audioIndex = IndexPath(row: 0, section: 0)
-        player?.stop()
-        player = nil
+        currentIndex = IndexPath(row: 0, section: 0)
     }
     
     fileprivate func setupDurationTracking() {
@@ -196,7 +217,7 @@ extension AudioPlayer {
     
     public func handlePlayButton() {
         guard let player = player else {
-            self.audioIndex.row = self.audioIndex.row
+            self.play(at: self.currentIndex)
             return
         }
         
@@ -215,14 +236,12 @@ extension AudioPlayer {
     }
     
     public func handlePreviousButton() {
-        if audioIndex.row > 0 {
-            audioIndex.row -= 1
-        } else if audioIndex.section > 0 {
-            
-            let prevComponentItems = tracks[audioIndex.section - 1]
-            audioIndex = IndexPath(row: prevComponentItems.count-1, section: audioIndex.section - 1)
+        if currentIndex.row > 0 {
+            play(at: previousRowSameSection)
+        } else if currentIndex.section > 0 {
+            play(at: lastRowPreviousSection)
         } else {
-            audioIndex.row = 0
+            play(at: firstRowSameSection)
         }
     }
     
@@ -271,10 +290,6 @@ extension AudioPlayer {
         }
     }
     
-    public func play(at indexPath: IndexPath) {
-        audioIndex = indexPath
-    }
-    
 }
 
 /// AudioPlayer functionality
@@ -282,8 +297,8 @@ extension AudioPlayer: AVAudioPlayerDelegate {
     
     private func playAudio() {
         
-        let currentSection = tracks[audioIndex.section]
-        let currentTrack = currentSection[audioIndex.row]
+        let currentSection = tracks[currentIndex.section]
+        let currentTrack = currentSection[currentIndex.row]
         
         guard !currentTrack.isEmpty, let path = Bundle.main.path(forResource: currentTrack, ofType: "mp3") else {
             return
@@ -319,31 +334,31 @@ extension AudioPlayer: AVAudioPlayerDelegate {
         case .repeatAll:
             playRepeat()
 //        case .repeatOne:
-//            audioIndex.row = audioIndex.row
+//            play(at: audioIndex)
         }
     }
     
     private func playRepeat() {
-        let section = tracks[audioIndex.section]
-        let moreRowsAhead = audioIndex.row < section.count - 1
+        let section = tracks[currentIndex.section]
+        let moreRowsAhead = currentIndex.row < section.count - 1
         
         if moreRowsAhead {
-            self.audioIndex.row += 1
+            self.play(at: nextRowSameSection)
         } else {
-            self.audioIndex.row = 0
+            self.play(at: firstRowSameSection)
         }
     }
     
     private func goToNextLine(){
         
-        let moreSectionsAhead = audioIndex.section < tracks.count - 1
-        let section = tracks[audioIndex.section]
-        let moreRowsAhead = audioIndex.row < section.count - 1
+        let moreSectionsAhead = currentIndex.section < tracks.count - 1
+        let section = tracks[currentIndex.section]
+        let moreRowsAhead = currentIndex.row < section.count - 1
         
         if moreRowsAhead {
-            self.audioIndex.row += 1
+            self.play(at: nextRowSameSection)
         } else if moreSectionsAhead {
-            self.audioIndex = IndexPath(row: 0, section: self.audioIndex.section + 1)
+            self.play(at: firstRowNextSection)
         } else {
             self.contentDelegate?.didCompleteAllTracks()
             self.panelDelegate?.setPlayButton(ButtonIcon.play.rawValue)
