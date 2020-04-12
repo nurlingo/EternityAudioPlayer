@@ -111,6 +111,12 @@ public class AudioPlayer: NSObject {
         notificationCenter.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
     }
     
+    private func resetAudioIndex() {
+        audioIndex = IndexPath(row: 0, section: 0)
+        player?.stop()
+        player = nil
+    }
+    
     fileprivate func setupDurationTracking() {
         updater = CADisplayLink(target: self, selector: #selector(self.trackAudio))
         updater.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
@@ -341,6 +347,7 @@ extension AudioPlayer: AVAudioPlayerDelegate {
         } else {
             self.contentDelegate?.didCompleteAllTracks()
             self.panelDelegate?.setPlayButton(ButtonIcon.play.rawValue)
+            self.audioIndex = IndexPath(row: 0, section: 0)
         }
     }
     
