@@ -75,6 +75,11 @@ public class AudioPlayer: NSObject {
         }
         
         didSet {
+            
+            if isResetingAudioIndex {
+                isResetingAudioIndex = false
+                return
+            }
             contentDelegate?.highlightPlaying(previousIndex: previousIndex, currentIndex: audioIndex)
             /// Uncomment for progress by tracks played
             if progressMode == .sectionBased {
@@ -91,6 +96,7 @@ public class AudioPlayer: NSObject {
         }
     }
     
+    fileprivate var isResetingAudioIndex: Bool = false
     fileprivate var previousIndex: IndexPath = IndexPath(row: 0, section: 0)
     fileprivate var player: AVAudioPlayer?
     fileprivate var updater : CADisplayLink! = nil
@@ -112,9 +118,8 @@ public class AudioPlayer: NSObject {
     }
     
     private func resetAudioIndex() {
+        isResetingAudioIndex = true
         audioIndex = IndexPath(row: 0, section: 0)
-        player?.stop()
-        player = nil
     }
     
     fileprivate func setupDurationTracking() {
@@ -347,7 +352,7 @@ extension AudioPlayer: AVAudioPlayerDelegate {
         } else {
             self.contentDelegate?.didCompleteAllTracks()
             self.panelDelegate?.setPlayButton(ButtonIcon.play.rawValue)
-            self.audioIndex = IndexPath(row: 0, section: 0)
+            self.resetAudioIndex()
         }
     }
     
