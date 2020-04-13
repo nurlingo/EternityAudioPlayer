@@ -125,17 +125,17 @@ public class AudioPlayer: NSObject {
     }
     
     public func deinitializePlayer() {
-        resetAudioIndex()
+        resetPlayer()
         repeatMode = .repeatOff
         progressMode = .durationBased
-        player?.stop()
-        player = nil
         let notificationCenter = NotificationCenter.default
         notificationCenter.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
     }
     
-    private func resetAudioIndex() {
+    private func resetPlayer() {
         currentIndex = IndexPath(row: 0, section: 0)
+        player?.stop()
+        player = nil
     }
     
     fileprivate func setupDurationTracking() {
@@ -362,7 +362,7 @@ extension AudioPlayer: AVAudioPlayerDelegate {
         } else {
             self.contentDelegate?.didCompleteAllTracks()
             self.panelDelegate?.setPlayButton(ButtonIcon.play.rawValue)
-            self.resetAudioIndex()
+            self.resetPlayer()
         }
     }
     
