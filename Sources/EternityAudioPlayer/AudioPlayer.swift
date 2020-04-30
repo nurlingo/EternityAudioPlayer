@@ -80,20 +80,20 @@ public class AudioPlayer: NSObject {
         IndexPath(row: tracks[currentIndex.section - 1].count-1, section: currentIndex.section - 1)
     }
     
-    private var firstRowSameSection: IndexPath {
-        IndexPath(row: 0, section: currentIndex.section)
-    }
-    
     private var previousRowSameSection: IndexPath {
         IndexPath(row: currentIndex.row-1, section: currentIndex.section)
     }
     
-    private var nextRowSameSection: IndexPath {
-        IndexPath(row: currentIndex.row+1, section: currentIndex.section)
+    private var firstRowSameSection: IndexPath {
+        IndexPath(row: 0, section: currentIndex.section)
     }
     
     private var firstRowNextSection: IndexPath {
-        IndexPath(row: currentIndex.row+1, section: currentIndex.section+1)
+        IndexPath(row: 0, section: currentIndex.section+1)
+    }
+    
+    private var nextRowSameSection: IndexPath {
+        IndexPath(row: currentIndex.row+1, section: currentIndex.section)
     }
     
     fileprivate var player: AVAudioPlayer?
