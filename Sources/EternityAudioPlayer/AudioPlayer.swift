@@ -144,6 +144,7 @@ public class AudioPlayer: NSObject {
     }
     
     fileprivate func removeDurationTracking() {
+        updater.remove(from: RunLoop.current, forMode: RunLoop.Mode.common)
         updater = nil
     }
     
