@@ -339,6 +339,10 @@ extension AudioPlayer: AVAudioPlayerDelegate {
         }
     }
     
+    public func isCurrentlyPlaying(_ audioIndex: IndexPath) -> Bool {
+        audioIndex == currentIndex
+    }
+    
     private func playRepeat() {
         let section = tracks[currentIndex.section]
         let moreRowsAhead = currentIndex.row < section.count - 1
